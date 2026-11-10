@@ -1,0 +1,5 @@
+version: 1
+bundleID: com.denogean.PocketStatus
+infoPath: Info.plist
+iconPath: AppIcon.png
+

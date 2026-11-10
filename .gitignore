@@ -1,0 +1,9 @@
+.build/
+.swiftpm/
+.bsp/
+.codegraph/
+.env
+xtool/
+*.ipa
+*.xcodeproj
+
