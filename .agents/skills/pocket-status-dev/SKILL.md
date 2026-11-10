@@ -31,6 +31,25 @@ The reliable deployment path bypasses `usbipd` (which drops AFC transfers with `
 
 ## 2. Build & Deploy iOS App (`xtool`)
 
+### Preferred Flow: `.ipa` + Taildrop (no USB cable)
+
+1. Ensure `POCKET_SERVER_TAILDROP_TARGET` is set in `.env` (see `.env.example`) and the iPhone is visible in `tailscale file cp --targets`.
+2. Build `xtool/PocketStatus.ipa` and send it over Tailscale:
+   ```powershell
+   .\scripts\send-ipa.ps1
+   ```
+   Or manually from WSL + Windows:
+   ```bash
+   source ~/.local/share/swiftly/env.sh
+   xtool dev build -c release --ipa   # add --sign if you want xtool signing embedded
+   ```
+   ```powershell
+   tailscale file cp .\xtool\PocketStatus.ipa "<taildrop-target>:"
+   ```
+3. On the iPhone, accept the Taildrop file (Files app) and import/install it in **SideStore** (SideStore signs on-device and handles 7-day renewals without USB).
+
+### Fallback Flow: Direct USB (`xtool dev run --usb`)
+
 Run from WSL inside the project root:
 
 ```bash
@@ -46,10 +65,10 @@ xtool dev run --usb
 ```
 
 - **App Icon:** `xtool.yml` uses `iconPath: AppIcon.png` (must remain an opaque `1024x1024` `.png`; non-png extensions fail validation).
-- **7-day free provisioning:** if the app expires after 7 days or provisioning fails with `ENTITY_ERROR` right after certificate renewal, wait ~30s and re-run `xtool dev run --usb`.
+- **7-day free provisioning:** if the app expires after 7 days or provisioning fails with `ENTITY_ERROR` right after certificate renewal, wait ~30s and re-run `xtool dev run --usb` (or refresh in SideStore).
 - **LAN HTTP:** `Info.plist` enables `NSAllowsLocalNetworking` so both Tailscale HTTPS and LAN HTTP URLs from `.env` (see `.env.example`) work.
 
-**Done when:** `xtool dev run --usb` finishes with `[Installing] 100%` and `[Verifying] 100%`.
+**Done when:** `xtool/PocketStatus.ipa` is delivered via `tailscale file cp` (exit code 0) or `xtool dev run --usb` finishes with `[Installing] 100%` and `[Verifying] 100%`.
 
 ## 3. Update Companion Rust API (`servidor-fedora`)
 

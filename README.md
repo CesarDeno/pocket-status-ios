@@ -30,7 +30,9 @@ pocket-status-ios/
 ├── xtool.yml                     # bundleID, Info.plist, and app icon config
 ├── Info.plist                    # Display name and NSAllowsLocalNetworking
 ├── AppIcon.png                   # App icon (1024x1024 PNG)
-├── .env.example                  # Private URL template (copy to .env)
+├── .env.example                  # Private URL / Taildrop target template (copy to .env)
+├── scripts/
+│   └── send-ipa.ps1              # Build release .ipa in WSL and send via Taildrop
 ├── Sources/PocketStatus/
 │   ├── PocketStatusApp.swift     # SwiftUI app entry point
 │   ├── ContentView.swift         # Views (Home, Storage, Containers, Settings, Logs)
@@ -46,27 +48,39 @@ pocket-status-ios/
 
 ## 🛠️ Requirements & Build (Windows + WSL2 + `xtool`)
 
+### Option A: `.ipa` + Tailscale Taildrop + SideStore (Recommended, No USB)
+
 1. **In WSL2 (Ubuntu):**
    - Swift toolchain (`6.4.2` via `swiftly`), `libc6-dev`, `gcc`, `zip`, and `xtool`.
    - iOS Darwin SDK extracted with `xtool setup` from a compatible `Xcode.xip`.
-2. **Reliable USB Connection on Windows (TCP `27015` relay):**
-   - Install `Apple.AppleMobileDeviceSupport` on Windows (instead of passing USB via `usbipd`, which frequently drops with `Mux error` in WSL2).
-   - Forward port `27015` to the WSL bridge gateway IP (`vEthernet (WSL)`):
-     ```powershell
-     $wslHostIp = (wsl -d Ubuntu -- ip route list default).Split()[2]
-     netsh interface portproxy delete v4tov4 listenport=27015 listenaddress=* 2>$null
-     netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$wslHostIp
-     ```
-3. **Build & Install onto iPhone:**
+2. **In Windows:**
+   - Tailscale installed and signed into the same tailnet as your iPhone (verify your phone shows up in `tailscale file cp --targets`).
+   - Copy `.env.example` to `.env` and set `POCKET_SERVER_TAILDROP_TARGET=<your-iphone-name>`.
+3. **Build & Send `.ipa` over Tailscale:**
+   ```powershell
+   .\scripts\send-ipa.ps1
+   ```
+   *(Or manually: `xtool dev build -c release --ipa` in WSL, then `tailscale file cp .\xtool\PocketStatus.ipa "<your-iphone>:"` in PowerShell.)*
+4. **Install on iPhone:**
+   - Save the incoming Taildrop file in **Files** and open/import `PocketStatus.ipa` with **SideStore** (SideStore signs and refreshes on-device over WireGuard, no PC needed every 7 days).
+
+### Option B: Direct USB via `xtool` (TCP `27015` relay)
+
+1. Install `Apple.AppleMobileDeviceSupport` on Windows (instead of passing USB via `usbipd`, which frequently drops with `Mux error` in WSL2).
+2. Forward port `27015` to the WSL bridge gateway IP (`vEthernet (WSL)`):
+   ```powershell
+   $wslHostIp = (wsl -d Ubuntu -- ip route list default).Split()[2]
+   netsh interface portproxy delete v4tov4 listenport=27015 listenaddress=* 2>$null
+   netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$wslHostIp
+   ```
+3. Build & install directly from WSL:
    ```bash
    source ~/.local/share/swiftly/env.sh
    export USBMUXD_SOCKET_ADDRESS="$(ip route list default | awk '{print $3}'):27015"
-
-   xtool dev build      # Compile only
-   xtool dev run --usb  # Compile, sign, and install over USB
+   xtool dev run --usb
    ```
 
-> **Free provisioning note:** with a standard free Apple ID (`Free Provisioning`), the provisioning profile expires every **7 days**. Re-running `xtool dev run --usb` refreshes the signature without erasing Keychain data.
+> **Free provisioning note:** with a standard free Apple ID, development profiles expire every **7 days**. Using **SideStore** (Option A) lets you renew directly on the iPhone; with USB (Option B), re-run `xtool dev run --usb`. Keychain data is preserved on updates.
 
 ---
 
