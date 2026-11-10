@@ -1,82 +1,81 @@
 # Pocket Server
 
-App personal de iOS en **SwiftUI** (diseño **Liquid Glass** para iOS 26 / iOS 27) para monitorear y controlar un servidor Linux (Fedora Server) y sus contenedores Docker desde el iPhone, compilada y desplegada desde Windows/WSL2 usando **[xtool](https://xtool.sh)** (SwiftPM, sin Xcode ni macOS).
+Personal **SwiftUI** iOS app (**Liquid Glass** design for iOS 26 / iOS 27) to monitor and control a Linux home server (Fedora Server) and its Docker containers from an iPhone, built and deployed from Windows/WSL2 using **[xtool](https://xtool.sh)** (SwiftPM, without Xcode or macOS).
 
 ---
 
-## ✨ Funciones
+## ✨ Features
 
-- **Inicio**
-  - Estado del servidor: hostname, uptime y refresco **En vivo (cada 4 s)** con pausa automática en segundo plano.
-  - Tarjetas de salud: **CPU** (`%` real, load average y temperatura `coretemp`), **RAM + zRAM**, **GPU NVIDIA** (temperatura, uso y VRAM) y resumen de **Docker**.
-  - **Accesos rápidos:** enlaces adaptativos (Tailscale HTTPS o LAN HTTP según tu URL base) para **Kavita**, **qBittorrent**, **Jellyfin**, **Suwayomi**, **AdGuard** y **Homepage**, abiertos dentro de la app con `SFSafariViewController`.
-- **Almacenamiento**
-  - Uso de volúmenes montados (`/` y `/mnt/storage`).
-  - Salud del pool **Btrfs** (discos faltantes, espacio asignado/sin asignar, datos reales, libre estimado y perfiles).
-  - Inventario de discos físicos (`lsblk`: modelo, `HDD`/`SSD`, interfaz y capacidad) y estado de timers de mantenimiento (`btrfs-scrub`, `btrfs-balance`).
-- **Contenedores**
-  - Lista completa con controles **Iniciar / Reiniciar / Detener** protegidos por diálogo de confirmación y lista blanca en el servidor.
-  - Visor de **logs en vivo** al tocar cualquier contenedor (con selección, copia al portapapeles y refresco).
-- **Seguridad y configuración**
-  - URL del servidor (Tailscale HTTPS o LAN HTTP) y **Bearer Token** guardados en **iOS Keychain**.
+- **Home (`Inicio`)**
+  - Server overview: hostname, uptime, and **Live refresh (every 4s)** with automatic pause when backgrounded.
+  - Health cards: **CPU** (live `%`, load average, and `coretemp` temperature), **RAM + zRAM**, **NVIDIA GPU** (temperature, utilization, and VRAM), and **Docker** summary.
+  - **Quick Shortcuts:** adaptive links (Tailscale HTTPS or LAN HTTP based on your configured base URL) for **Kavita**, **qBittorrent**, **Jellyfin**, **Suwayomi**, **AdGuard**, and **Homepage**, opened in-app via `SFSafariViewController`.
+- **Storage (`Almacenamiento`)**
+  - Mounted volume usage (`/` and `/mnt/storage`).
+  - **Btrfs** pool health (missing devices, allocated vs. unallocated space, actual data usage, estimated free space, and profiles).
+  - Physical drive inventory (`lsblk`: model, `HDD`/`SSD`, interface, and capacity) plus systemd maintenance timer status (`btrfs-scrub`, `btrfs-balance`).
+- **Containers (`Contenedores`)**
+  - Full container list with **Start / Restart / Stop** controls protected by confirmation dialogs and a server-side allowlist.
+  - **Live log viewer** when tapping any container (text selection, copy to clipboard, and manual refresh).
+- **Security & Configuration**
+  - Base URL (Tailscale HTTPS or LAN HTTP) and **Bearer Token** stored securely in **iOS Keychain**.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```text
 pocket-status-ios/
-├── Package.swift                 # Manifiesto SwiftPM (iOS 26.0+)
-├── xtool.yml                     # Configuración de bundleID, Info.plist e icono
-├── Info.plist                    # Nombre visible y NSAllowsLocalNetworking
-├── AppIcon.png                   # Icono de la app (1024x1024 PNG)
-├── .env.example                  # Plantilla de URLs privadas (copiar a .env)
+├── Package.swift                 # SwiftPM manifest (iOS 26.0+)
+├── xtool.yml                     # bundleID, Info.plist, and app icon config
+├── Info.plist                    # Display name and NSAllowsLocalNetworking
+├── AppIcon.png                   # App icon (1024x1024 PNG)
+├── .env.example                  # Private URL template (copy to .env)
 ├── Sources/PocketStatus/
-│   ├── PocketStatusApp.swift     # Punto de entrada SwiftUI
-│   ├── ContentView.swift         # Vistas (Inicio, Almacenamiento, Contenedores, Ajustes, Logs)
-│   ├── Models.swift              # Modelos Codable y accesos rápidos
-│   ├── APIClient.swift           # Cliente HTTP async/await con Bearer Token
-│   ├── KeychainStore.swift       # Persistencia en iOS Keychain
-│   └── SafariView.swift          # Visor web in-app (SFSafariViewController)
+│   ├── PocketStatusApp.swift     # SwiftUI app entry point
+│   ├── ContentView.swift         # Views (Home, Storage, Containers, Settings, Logs)
+│   ├── Models.swift              # Codable models and service shortcuts
+│   ├── APIClient.swift           # Async/await HTTP client with Bearer auth
+│   ├── KeychainStore.swift       # iOS Keychain persistence
+│   └── SafariView.swift          # In-app browser (SFSafariViewController)
 └── .agents/skills/pocket-status-dev/
-    └── SKILL.md                  # Runbook de compilación y despliegue para agentes
+    └── SKILL.md                  # Build and deploy runbook for coding agents
 ```
 
 ---
 
-## 🛠️ Requisitos y Compilación (Windows + WSL2 + `xtool`)
+## 🛠️ Requirements & Build (Windows + WSL2 + `xtool`)
 
-1. **En WSL2 (Ubuntu):**
-   - Swift toolchain (`6.4.2` vía `swiftly`), `libc6-dev`, `gcc`, `zip` y `xtool`.
-   - SDK de iOS extraído con `xtool setup` desde un `Xcode.xip` compatible.
-2. **Conexión USB estable en Windows (relay TCP `27015`):**
-   - Tener instalado `Apple.AppleMobileDeviceSupport` en Windows (en lugar de pasar el USB por `usbipd`, que suele lanzar `Mux error` en WSL2).
-   - Reenviar el puerto `27015` hacia la IP puente de WSL (`vEthernet (WSL)`):
+1. **In WSL2 (Ubuntu):**
+   - Swift toolchain (`6.4.2` via `swiftly`), `libc6-dev`, `gcc`, `zip`, and `xtool`.
+   - iOS Darwin SDK extracted with `xtool setup` from a compatible `Xcode.xip`.
+2. **Reliable USB Connection on Windows (TCP `27015` relay):**
+   - Install `Apple.AppleMobileDeviceSupport` on Windows (instead of passing USB via `usbipd`, which frequently drops with `Mux error` in WSL2).
+   - Forward port `27015` to the WSL bridge gateway IP (`vEthernet (WSL)`):
      ```powershell
      $wslHostIp = (wsl -d Ubuntu -- ip route list default).Split()[2]
      netsh interface portproxy delete v4tov4 listenport=27015 listenaddress=* 2>$null
      netsh interface portproxy set v4tov4 listenport=27015 connectaddress=127.0.0.1 connectport=27015 listenaddress=$wslHostIp
      ```
-3. **Compilar e instalar en el iPhone:**
+3. **Build & Install onto iPhone:**
    ```bash
    source ~/.local/share/swiftly/env.sh
    export USBMUXD_SOCKET_ADDRESS="$(ip route list default | awk '{print $3}'):27015"
 
-   xtool dev build      # Solo compilar
-   xtool dev run --usb  # Compilar, firmar e instalar vía USB
+   xtool dev build      # Compile only
+   xtool dev run --usb  # Compile, sign, and install over USB
    ```
 
-> **Nota sobre firmado gratuito:** con una cuenta estándar de Apple (`Free Provisioning`), el provisioning profile caduca cada **7 días**. Para renovar la app sin perder los datos guardados en Keychain, basta volver a ejecutar `xtool dev run --usb`.
+> **Free provisioning note:** with a standard free Apple ID (`Free Provisioning`), the provisioning profile expires every **7 days**. Re-running `xtool dev run --usb` refreshes the signature without erasing Keychain data.
 
 ---
 
-## 🔌 Contrato con la Micro-API
+## 🔌 Micro-API Contract
 
-La app consume una micro-API REST (en Rust/Axum sobre Tailscale HTTPS o LAN) protegida con `Authorization: Bearer <token>`:
+The app connects to a companion REST micro-API (Rust/Axum over Tailscale HTTPS or LAN) protected with `Authorization: Bearer <token>`:
 
-- `GET /status` — Telemetría de sistema, memoria, GPU, discos, pool Btrfs, timers y contenedores.
-- `POST /docker/{container}/{action}` — Acciones `start`, `stop` y `restart` restringidas a una lista blanca en el backend.
-- `GET /docker/{container}/logs?tail=80` — Últimas líneas de log del contenedor.
+- `GET /status` — System, memory, GPU, disk, Btrfs pool, maintenance timers, and Docker container telemetry.
+- `POST /docker/{container}/{action}` — `start`, `stop`, and `restart` actions restricted to a backend allowlist.
+- `GET /docker/{container}/logs?tail=80` — Recent log lines for a container.
 
-Al abrir la app por primera vez, entra a **Ajustes** (icono de engrane) para configurar la URL base (ver `.env.example`, por ejemplo `https://<tu-servidor>.ts.net:9095` o `http://<ip-servidor>:9095`) y tu Bearer Token. Para tu referencia local puedes copiar `.env.example` a `.env` (ignorado por Git).
-
+On first launch, open **Settings** (gear icon) to enter your base URL (see `.env.example`, e.g. `https://<your-server>.ts.net:9095` or `http://<server-ip>:9095`) and Bearer Token. For local reference, copy `.env.example` to `.env` (gitignored).
