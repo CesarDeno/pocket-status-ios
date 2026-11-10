@@ -173,9 +173,9 @@ enum DockerAction: String, Sendable {
 
     var label: String {
         switch self {
-        case .start: "Iniciar"
-        case .stop: "Detener"
-        case .restart: "Reiniciar"
+        case .start: "Start"
+        case .stop: "Stop"
+        case .restart: "Restart"
         }
     }
 

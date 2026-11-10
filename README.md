@@ -6,15 +6,15 @@ Personal **SwiftUI** iOS app (**Liquid Glass** design for iOS 26 / iOS 27) to mo
 
 ## ✨ Features
 
-- **Home (`Inicio`)**
+- **Home**
   - Server overview: hostname, uptime, and **Live refresh (every 4s)** with automatic pause when backgrounded.
   - Health cards: **CPU** (live `%`, load average, and `coretemp` temperature), **RAM + zRAM**, **NVIDIA GPU** (temperature, utilization, and VRAM), and **Docker** summary.
   - **Quick Shortcuts:** adaptive links (Tailscale HTTPS or LAN HTTP based on your configured base URL) for **Kavita**, **qBittorrent**, **Jellyfin**, **Suwayomi**, **AdGuard**, and **Homepage**, opened in-app via `SFSafariViewController`.
-- **Storage (`Almacenamiento`)**
+- **Storage**
   - Mounted volume usage (`/` and `/mnt/storage`).
   - **Btrfs** pool health (missing devices, allocated vs. unallocated space, actual data usage, estimated free space, and profiles).
   - Physical drive inventory (`lsblk`: model, `HDD`/`SSD`, interface, and capacity) plus systemd maintenance timer status (`btrfs-scrub`, `btrfs-balance`).
-- **Containers (`Contenedores`)**
+- **Containers**
   - Full container list with **Start / Restart / Stop** controls protected by confirmation dialogs and a server-side allowlist.
   - **Live log viewer** when tapping any container (text selection, copy to clipboard, and manual refresh).
 - **Security & Configuration**

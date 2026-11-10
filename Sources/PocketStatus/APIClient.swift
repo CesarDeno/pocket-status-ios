@@ -10,15 +10,15 @@ enum APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingConfig:
-            "Configura la URL y el Bearer Token en Ajustes."
+            "Configure the server URL and Bearer Token in Settings."
         case .invalidURL:
-            "La URL del servidor no es válida."
+            "The server URL is invalid."
         case .unauthorized:
-            "Token inválido o rechazado (401)."
+            "Invalid or rejected token (401)."
         case .forbidden:
-            "Acceso bloqueado por red (403). Usa Tailscale o LAN."
+            "Network access blocked (403). Connect via Tailscale or LAN."
         case let .httpStatus(code, message):
-            "Error HTTP \(code): \(message)"
+            "HTTP Error \(code): \(message)"
         }
     }
 }
@@ -92,7 +92,7 @@ enum APIClient {
     private static func send(_ request: URLRequest) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else {
-            throw APIError.httpStatus(-1, "Respuesta inválida")
+            throw APIError.httpStatus(-1, "Invalid response")
         }
 
         switch http.statusCode {

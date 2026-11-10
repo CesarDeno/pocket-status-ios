@@ -52,11 +52,11 @@ struct ContentView: View {
                 }
             }
             .tabItem {
-                Label("Inicio", systemImage: "house.fill")
+                Label("Home", systemImage: "house.fill")
             }
             .tag(AppTab.home)
 
-            tabPage(title: "Almacenamiento") {
+            tabPage(title: "Storage") {
                 if let status {
                     disksSection(status.disks)
                     if let btrfs = status.btrfs {
@@ -75,11 +75,11 @@ struct ContentView: View {
                 }
             }
             .tabItem {
-                Label("Almacenamiento", systemImage: "internaldrive.fill")
+                Label("Storage", systemImage: "internaldrive.fill")
             }
             .tag(AppTab.storage)
 
-            tabPage(title: "Contenedores") {
+            tabPage(title: "Containers") {
                 if let status {
                     containersSummaryBanner(status.containers)
                     containersSection(status.containers)
@@ -90,7 +90,7 @@ struct ContentView: View {
                 }
             }
             .tabItem {
-                Label("Contenedores", systemImage: "shippingbox.fill")
+                Label("Containers", systemImage: "shippingbox.fill")
             }
             .tag(AppTab.containers)
         }
@@ -147,15 +147,15 @@ struct ContentView: View {
                 ) {
                     Task { await runDockerAction(pending) }
                 }
-                Button("Cancelar", role: .cancel) {}
+                Button("Cancel", role: .cancel) {}
             }
         } message: {
             if let pending = pendingAction {
-                Text("Se ejecutará `docker \(pending.action.rawValue) \(pending.container)` en Fedora.")
+                Text("This will run `docker \(pending.action.rawValue) \(pending.container)` on Fedora.")
             }
         }
         .alert(
-            "Error en Docker",
+            "Docker Error",
             isPresented: Binding(
                 get: { actionError != nil },
                 set: { if !$0 { actionError = nil } }
@@ -199,7 +199,7 @@ struct ContentView: View {
                         Image(systemName: isLiveEnabled ? "dot.radiowaves.left.and.right" : "pause.circle")
                     }
                     .tint(isLiveEnabled ? .green : .secondary)
-                    .accessibilityLabel(isLiveEnabled ? "Pausar actualización en vivo" : "Activar actualización en vivo")
+                    .accessibilityLabel(isLiveEnabled ? "Pause live refresh" : "Enable live refresh")
 
                     Button {
                         showingSettings = true
@@ -215,7 +215,7 @@ struct ContentView: View {
     }
 
     private var loadingState: some View {
-        ProgressView("Consultando Fedora...")
+        ProgressView("Connecting to Fedora...")
             .padding(.top, 60)
     }
 
@@ -234,7 +234,7 @@ struct ContentView: View {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 7, height: 7)
-                    Text(isLiveEnabled ? "En vivo · 4s" : "En línea")
+                    Text(isLiveEnabled ? "Live · 4s" : "Online")
                         .font(.caption.weight(.semibold))
                 }
                 .padding(.horizontal, 10)
@@ -257,8 +257,8 @@ struct ContentView: View {
 
     private func healthGrid(_ status: ServerStatusResponse) -> some View {
         let cpuFooter = status.system.cpuTempC.map {
-            "\(status.system.cpuCores) hilos · \($0)°C"
-        } ?? "\(status.system.cpuCores) hilos"
+            "\(status.system.cpuCores) threads · \($0)°C"
+        } ?? "\(status.system.cpuCores) threads"
 
         return LazyVGrid(columns: gridColumns, spacing: 12) {
             MetricCard(
@@ -285,7 +285,7 @@ struct ContentView: View {
                     icon: "display",
                     tint: gpu.temperatureC >= 75 ? .orange : .green,
                     primary: "\(gpu.temperatureC)°C",
-                    secondary: "Uso \(gpu.utilizationPercent)%",
+                    secondary: "Usage \(gpu.utilizationPercent)%",
                     footer: "VRAM \(gpu.memoryUsedMb)/\(gpu.memoryTotalMb) MB"
                 )
             } else {
@@ -293,8 +293,8 @@ struct ContentView: View {
                     title: "GPU",
                     icon: "display",
                     tint: .gray,
-                    primary: "N/D",
-                    secondary: "nvidia-smi no disponible",
+                    primary: "N/A",
+                    secondary: "nvidia-smi unavailable",
                     footer: ""
                 )
             }
@@ -308,8 +308,8 @@ struct ContentView: View {
                     icon: "shippingbox",
                     tint: .teal,
                     primary: "\(runningCount)/\(status.containers.count)",
-                    secondary: "Contenedores activos",
-                    footer: "Ver contenedores ›",
+                    secondary: "Running containers",
+                    footer: "View containers ›",
                     useGlassBackground: false
                 )
                 .glassEffect(
@@ -325,7 +325,7 @@ struct ContentView: View {
         let runningByName = Dictionary(uniqueKeysWithValues: containers.map { ($0.name, $0.isRunning) })
 
         return VStack(alignment: .leading, spacing: 10) {
-            Text("Accesos rápidos")
+            Text("Quick Shortcuts")
                 .font(.headline)
 
             GlassEffectContainer(spacing: 12) {
@@ -376,7 +376,7 @@ struct ContentView: View {
 
     private func disksSection(_ disks: [DiskStatus]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Volúmenes montados")
+            Text("Mounted Volumes")
                 .font(.headline)
 
             ForEach(disks) { disk in
@@ -392,13 +392,13 @@ struct ContentView: View {
                     ProgressView(value: Double(disk.usePercent), total: 100)
                         .tint(disk.usePercent >= 85 ? .orange : .blue)
                     HStack {
-                        Text("Usado: \(Formatters.bytes(disk.usedBytes))")
+                        Text("Used: \(Formatters.bytes(disk.usedBytes))")
                         Spacer()
-                        Text("Libre: \(Formatters.bytes(disk.availableBytes))")
+                        Text("Free: \(Formatters.bytes(disk.availableBytes))")
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    Text("Capacidad total: \(Formatters.bytes(disk.totalBytes))")
+                    Text("Total capacity: \(Formatters.bytes(disk.totalBytes))")
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
@@ -413,11 +413,11 @@ struct ContentView: View {
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Pool Btrfs (/mnt/storage)")
+                Text("Btrfs Pool (/mnt/storage)")
                     .font(.headline)
                 Spacer()
                 Label(
-                    isHealthy ? "Íntegro" : "\(pool.deviceMissing) faltante(s)",
+                    isHealthy ? "Healthy" : "\(pool.deviceMissing) missing",
                     systemImage: isHealthy ? "checkmark.shield.fill" : "exclamationmark.triangle.fill"
                 )
                 .font(.caption.weight(.semibold))
@@ -426,7 +426,7 @@ struct ContentView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("Espacio asignado")
+                    Text("Allocated space")
                         .font(.subheadline.weight(.medium))
                     Spacer()
                     Text("\(Int(pool.allocatedFraction * 100))%")
@@ -437,16 +437,16 @@ struct ContentView: View {
                     .tint(.teal)
 
                 LazyVGrid(columns: gridColumns, spacing: 10) {
-                    StorageStatRow(title: "Asignado", value: Formatters.bytes(pool.allocatedBytes))
-                    StorageStatRow(title: "Sin asignar", value: Formatters.bytes(pool.unallocatedBytes))
-                    StorageStatRow(title: "Datos reales", value: Formatters.bytes(pool.usedBytes))
-                    StorageStatRow(title: "Libre est.", value: Formatters.bytes(pool.freeEstimatedBytes))
+                    StorageStatRow(title: "Allocated", value: Formatters.bytes(pool.allocatedBytes))
+                    StorageStatRow(title: "Unallocated", value: Formatters.bytes(pool.unallocatedBytes))
+                    StorageStatRow(title: "Data used", value: Formatters.bytes(pool.usedBytes))
+                    StorageStatRow(title: "Est. free", value: Formatters.bytes(pool.freeEstimatedBytes))
                 }
 
                 Divider()
 
                 HStack {
-                    Text("Perfiles: Data \(pool.dataProfile) · Metadata \(pool.metadataProfile)")
+                    Text("Profiles: Data \(pool.dataProfile) · Metadata \(pool.metadataProfile)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -459,7 +459,7 @@ struct ContentView: View {
 
     private func physicalDrivesSection(_ devices: [BlockDevice]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Discos físicos")
+            Text("Physical Drives")
                 .font(.headline)
 
             VStack(spacing: 0) {
@@ -498,7 +498,7 @@ struct ContentView: View {
 
     private func timersSection(_ timers: [MaintenanceTimer]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Mantenimiento Btrfs")
+            Text("Btrfs Maintenance")
                 .font(.headline)
 
             VStack(spacing: 0) {
@@ -518,10 +518,10 @@ struct ContentView: View {
                                 )
                                 .foregroundStyle(timer.isActive ? .green : .orange)
                         }
-                        Text("Próximo: \(timer.nextRun)")
+                        Text("Next: \(timer.nextRun)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text("Último: \(timer.lastRun)")
+                        Text("Last: \(timer.lastRun)")
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                     }
@@ -540,10 +540,10 @@ struct ContentView: View {
         let runningCount = containers.filter(\.isRunning).count
         return HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Label("\(runningCount) de \(containers.count) activos", systemImage: "shippingbox.fill")
+                Label("\(runningCount) of \(containers.count) running", systemImage: "shippingbox.fill")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.teal)
-                Text("Toca un contenedor para ver sus logs")
+                Text("Tap a container to view logs")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -602,7 +602,7 @@ struct ContentView: View {
                                 }
                                 .buttonStyle(.glass)
                                 .tint(.blue)
-                                .accessibilityLabel("Reiniciar \(container.name)")
+                                .accessibilityLabel("Restart \(container.name)")
 
                                 Button {
                                     pendingAction = PendingDockerAction(container: container.name, action: .stop)
@@ -612,7 +612,7 @@ struct ContentView: View {
                                 }
                                 .buttonStyle(.glass)
                                 .tint(.red)
-                                .accessibilityLabel("Detener \(container.name)")
+                                .accessibilityLabel("Stop \(container.name)")
                             } else {
                                 Button {
                                     pendingAction = PendingDockerAction(container: container.name, action: .start)
@@ -622,11 +622,11 @@ struct ContentView: View {
                                 }
                                 .buttonStyle(.glassProminent)
                                 .tint(.green)
-                                .accessibilityLabel("Iniciar \(container.name)")
+                                .accessibilityLabel("Start \(container.name)")
                             }
                         }
                     } else {
-                        Text("Protegido")
+                        Text("Protected")
                             .font(.caption2.weight(.medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -641,7 +641,7 @@ struct ContentView: View {
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
     private var emptyState: some View {
@@ -655,17 +655,17 @@ struct ContentView: View {
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
             } else {
-                Text("Sin datos del servidor aún")
+                Text("No server data yet")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             HStack(spacing: 12) {
-                Button("Reintentar") {
+                Button("Retry") {
                     Task { await refresh() }
                 }
                 .buttonStyle(.glassProminent)
 
-                Button("Ajustes") {
+                Button("Settings") {
                     showingSettings = true
                 }
                 .buttonStyle(.glass)
@@ -777,33 +777,33 @@ private struct SettingsSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Servidor") {
-                    TextField("URL base", text: $baseURL)
+                Section("Server") {
+                    TextField("Base URL", text: $baseURL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
 
-                    Button("Usar plantilla Tailscale HTTPS") {
+                    Button("Use Tailscale HTTPS template") {
                         baseURL = "https://your-server.tailnet.ts.net:9095"
                     }
-                    Button("Usar plantilla LAN") {
+                    Button("Use LAN template") {
                         baseURL = "http://192.168.1.100:9095"
                     }
                 }
 
-                Section("Autenticación") {
+                Section("Authentication") {
                     SecureField("Bearer Token", text: $token)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
             }
-            .navigationTitle("Ajustes")
+            .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Guardar") {
+                    Button("Save") {
                         onSave()
                         dismiss()
                     }
@@ -848,18 +848,18 @@ private struct DockerLogsSheet: View {
         NavigationStack {
             Group {
                 if isLoading && logs.isEmpty {
-                    ProgressView("Cargando logs de \(container)...")
+                    ProgressView("Loading \(container) logs...")
                 } else if let errorMessage, logs.isEmpty {
                     ContentUnavailableView(
-                        "Error al cargar logs",
+                        "Failed to load logs",
                         systemImage: "exclamationmark.triangle",
                         description: Text(errorMessage)
                     )
                 } else if logs.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     ContentUnavailableView(
-                        "Sin logs recientes",
+                        "No recent logs",
                         systemImage: "doc.text",
-                        description: Text("El contenedor no tiene salida reciente.")
+                        description: Text("This container has no recent log output.")
                     )
                 } else {
                     ScrollView {
@@ -876,7 +876,7 @@ private struct DockerLogsSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cerrar") { dismiss() }
+                    Button("Close") { dismiss() }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
